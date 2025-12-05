@@ -63,3 +63,109 @@ def generate_random_graph(num_nodes=10, edge_prob=0.3, cap_min=5, cap_max=20):
         return None
 
     return G
+
+def generate_layered_graph(n_layers, width, cap_low=1, cap_high=20):
+    """
+    Generate a layered directed graph
+
+    Input:
+    - number of layers (>= 1)
+    - number of nodes per layer
+    - capacity range
+
+    Output:
+    - NetworkX.DiGraph
+    - source 
+    - sink 
+    """
+    G = nx.DiGraph()
+
+    layers = [
+        [f"L{L}_{i}" for i in range(width)]
+        for L in range(n_layers)
+    ]
+
+    s = "s"
+    t = "t"
+
+    # add source and sink
+    G.add_node(s)
+    G.add_node(t)
+    for layer in layers:
+        for node in layer:
+            G.add_node(node)
+
+    # connect source to first layer
+    for node in layers[0]:
+        cap = random.randint(cap_low, cap_high)
+        G.add_edge(s, node, capacity=cap)
+
+    # connect intermediate layers
+    for l in range(n_layers - 1):
+        for u in layers[l]:
+            for v in layers[l+1]:
+                cap = random.randint(cap_low, cap_high)
+                G.add_edge(u, v, capacity=cap)
+
+    # connect last layer to sink
+    for node in layers[-1]:
+        cap = random.randint(cap_low, cap_high)
+        G.add_edge(node, t, capacity=cap)
+
+    return G, s, t
+
+def generate_layered_graph_heavytail(
+    n_layers, width,
+    small_low=1, small_high=20,
+    big_low=500, big_high=2000,
+    big_ratio=0.1
+):
+    """
+    Generate a heavy-tail layered graph
+
+    Input:
+    - number of layers (>= 1)
+    - number of nodes per layer
+    - small capacity range
+    - big capacity range
+    - big ratio
+
+    Output:
+    - NetworkX.DiGraph
+    - source 
+    - sink 
+    """
+
+    G = nx.DiGraph()
+
+    def random_cap():
+        if random.random() < big_ratio:
+            return random.randint(big_low, big_high)
+        return random.randint(small_low, small_high)
+
+    s = "s"
+    t = "t"
+    G.add_node(s)
+    G.add_node(t)
+
+    layers = []
+    for L in range(n_layers):
+        layer_nodes = [f"L{L}_{i}" for i in range(width)]
+        layers.append(layer_nodes)
+        G.add_nodes_from(layer_nodes)
+
+    # connect source to first layer
+    for node in layers[0]:
+        G.add_edge(s, node, capacity=random_cap())
+
+    # connect intermediate layers
+    for l in range(n_layers - 1):
+        for u in layers[l]:
+            for v in layers[l + 1]:
+                G.add_edge(u, v, capacity=random_cap())
+
+    # connect last layer to sink
+    for node in layers[-1]:
+        G.add_edge(node, t, capacity=random_cap())
+
+    return G, s, t
