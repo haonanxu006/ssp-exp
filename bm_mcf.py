@@ -5,14 +5,14 @@ from algorithms.ff_mcf import MultiCommodityFlowFF
 from algorithms.lp_mcf import MultiCommodityFlowLP
 from generators.mcf_generators import generate_random_commodities, generate_random_graph
 
-def run_one_instance(num_nodes, num_commodities, edge_prob):
+def run_one_instance(num_nodes, num_commodities, edge_prob, cap_min, cap_max, demand_min, demand_max):
     # guarantee one valid graph and one valid commodities
     while True:
         G = generate_random_graph(
             num_nodes=num_nodes,
             edge_prob=edge_prob,
-            cap_min=5,
-            cap_max=20,
+            cap_min=cap_min,
+            cap_max=cap_max,
         )
         if G is None:
             continue
@@ -20,8 +20,8 @@ def run_one_instance(num_nodes, num_commodities, edge_prob):
         commodities = generate_random_commodities(
             G,
             num_commodities=num_commodities,
-            demand_min=5,
-            demand_max=20,
+            demand_min=demand_min,
+            demand_max=demand_max,
         )
         if commodities is None:
             continue
@@ -46,7 +46,7 @@ def run_one_instance(num_nodes, num_commodities, edge_prob):
 
     return lp_time, ff_time, lp_total, ff_total
 
-def benchmark(num_nodes, num_commodities, edge_prob=0.3, trials=5):
+def benchmark(num_nodes, num_commodities, edge_prob=0.3, cap_min=5, cap_max=20, demand_min=5, demand_max=20, trials=5):
     print(f"=== Benchmark: Nodes={num_nodes}, Commodities={num_commodities} ===")
     
     lp_times = []
@@ -56,7 +56,7 @@ def benchmark(num_nodes, num_commodities, edge_prob=0.3, trials=5):
 
     for i in range(trials):
         lp_time, ff_time, lp_total, ff_total = run_one_instance(
-            num_nodes, num_commodities, edge_prob
+            num_nodes, num_commodities, edge_prob, cap_min, cap_max, demand_min, demand_max
         )
 
         lp_times.append(lp_time)
@@ -97,6 +97,10 @@ if __name__ == "__main__":
             num_nodes=num_nodes,
             num_commodities=num_commodities,
             edge_prob=0.05,
+            cap_min=5, 
+            cap_max=20, 
+            demand_min=5, 
+            demand_max=20,
             trials=5,
         )
 
